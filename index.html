@@ -2954,11 +2954,11 @@ function agSearch(q) {
   if (wrap) wrap.style.display = '';
   const lq = q.toLowerCase();
   const results = [];
-  DIAS.forEach(function(dia, diaIdx) {
-    var acts = ACTIVIDADES[dia.fecha] || [];
-    acts.forEach(function(a) {
-      if (a.desc.toLowerCase().includes(lq) || dia.label.toLowerCase().includes(lq) || dia.ciudad.toLowerCase().includes(lq)) {
-        results.push({ icon: a.icon || '📅', desc: a.desc, meta: dia.label + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
+  PROGRAMA.forEach(function(dia, diaIdx) {
+    (dia.eventos || []).forEach(function(ev) {
+      var text = (ev.desc + ' ' + (ev.nota || '') + ' ' + dia.ciudad + ' ' + (dia.resumen || '')).toLowerCase();
+      if (text.includes(lq)) {
+        results.push({ icon: ev.icon || '📅', desc: ev.desc, meta: 'Día ' + dia.dia + ' · ' + dia.fechaCorta + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
       }
     });
   });
@@ -5039,11 +5039,11 @@ function agSearch(q) {
   if (!q) { renderOverview(); return; }
   const lq = q.toLowerCase();
   const results = [];
-  DIAS.forEach(function(dia, diaIdx) {
-    var acts = ACTIVIDADES[dia.fecha] || [];
-    acts.forEach(function(a) {
-      if (a.desc.toLowerCase().includes(lq) || dia.label.toLowerCase().includes(lq) || dia.ciudad.toLowerCase().includes(lq)) {
-        results.push({ icon: a.icon || '📅', desc: a.desc, meta: dia.label + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
+  PROGRAMA.forEach(function(dia, diaIdx) {
+    (dia.eventos || []).forEach(function(ev) {
+      var text = (ev.desc + ' ' + (ev.nota || '') + ' ' + dia.ciudad + ' ' + (dia.resumen || '')).toLowerCase();
+      if (text.includes(lq)) {
+        results.push({ icon: ev.icon || '📅', desc: ev.desc, meta: 'Día ' + dia.dia + ' · ' + dia.fechaCorta + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
       }
     });
   });
