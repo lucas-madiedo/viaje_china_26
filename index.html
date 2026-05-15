@@ -2992,7 +2992,7 @@ function agSearch(q) {
         + '<div class="ag-sr-desc">' + r.desc + '</div>'
         + '<div class="ag-sr-meta">' + r.hora + '</div>'
         + '</div>'
-        + '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>'
+        + (r.type !== 'prog' ? '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>' : '')
         + '</div>';
     });
   }
@@ -5085,7 +5085,7 @@ function agSearch(q) {
         + '<div class="ag-sr-desc">' + r.desc + '</div>'
         + '<div class="ag-sr-meta">' + r.hora + '</div>'
         + '</div>'
-        + '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>'
+        + (r.type !== 'prog' ? '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>' : '')
         + '</div>';
     });
   }
