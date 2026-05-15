@@ -465,6 +465,7 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     #section-agenda #content-area {
       flex: 1; overflow: hidden; position: relative;
       display: flex; flex-direction: column;
+      padding-bottom: 0;
     }
     /* Paneles de agenda (programa / vuelos / hoteles) */
     .ag-panel { display: none; }
@@ -474,6 +475,7 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     #panel-ag-vuelos, #panel-ag-hoteles {
       overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
       padding: 16px var(--pad-h) calc(var(--nav-height) + 32px);
+      background: var(--bg);
     }
 
     /* ── BÚSQUEDA AGENDA ── */
@@ -581,6 +583,7 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
       overflow-y: auto; overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
       padding: 16px var(--pad-h) calc(var(--nav-height) + 32px);
+      background: var(--bg);
       transition: transform 0.3s cubic-bezier(.32,0,.15,1), opacity 0.25s;
     }
     #prog-overview::-webkit-scrollbar { width: 3px; }
@@ -3014,11 +3017,22 @@ window.openBitacoraPreset = openBitacoraPreset;
 (function() {
   const section = document.getElementById('section-agenda');
   let lastY = 0;
+  let ticking = false;
   function onScroll(e) {
     const y = e.target.scrollTop;
-    if (y > lastY && y > 40) section.classList.add('header-hidden');
-    else if (y < lastY) section.classList.remove('header-hidden');
-    lastY = y;
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function() {
+      if (y <= 5) {
+        section.classList.remove('header-hidden');
+      } else if (y > lastY + 4 && y > 40) {
+        section.classList.add('header-hidden');
+      } else if (y < lastY - 4) {
+        section.classList.remove('header-hidden');
+      }
+      lastY = y;
+      ticking = false;
+    });
   }
   document.addEventListener('DOMContentLoaded', function() {
     ['prog-overview', 'prog-detail-scroll', 'panel-ag-vuelos', 'panel-ag-hoteles'].forEach(function(id) {
