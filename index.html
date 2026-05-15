@@ -463,18 +463,16 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
 
     /* ── CONTENT AREA ── */
     #section-agenda #content-area {
-      flex: 1; overflow: hidden; position: relative;
-      display: flex; flex-direction: column;
-      padding-bottom: 0;
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 0 calc(var(--nav-height) + 32px);
     }
+    #section-agenda .inner-tabs { position: sticky; top: 0; z-index: 10; }
     /* Paneles de agenda (programa / vuelos / hoteles) */
     .ag-panel { display: none; }
-    .ag-panel.active { display: block; flex: 1; min-height: 0; }
-    #panel-ag-programa.ag-panel.active { display: flex; flex-direction: column; }
-    #panel-ag-programa { position: relative; overflow: hidden; }
+    .ag-panel.active { display: block; }
     #panel-ag-vuelos, #panel-ag-hoteles {
-      overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
-      padding: 16px var(--pad-h) calc(var(--nav-height) + 32px);
+      padding: 16px var(--pad-h) 0;
       background: var(--bg);
     }
 
@@ -518,14 +516,6 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     /* ── SCREEN HEADER ── */
     .screen-header {
       background: var(--primary); padding: 16px var(--pad-h) 14px; flex-shrink: 0;
-    }
-    #section-agenda .screen-header {
-      overflow: hidden;
-      transition: max-height 0.28s ease, opacity 0.2s ease, padding-top 0.28s ease, padding-bottom 0.28s ease;
-      max-height: 200px;
-    }
-    #section-agenda.header-hidden .screen-header {
-      max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
     }
     .header-inner {
       display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
@@ -579,10 +569,7 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
        VISTA 1 — LISTA DE DÍAS
     ═══════════════════════════════════════ */
     #prog-overview {
-      position: absolute; inset: 0;
-      overflow-y: auto; overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding: 16px var(--pad-h) calc(var(--nav-height) + 32px);
+      padding: 16px var(--pad-h) 0;
       background: var(--bg);
       transition: transform 0.3s cubic-bezier(.32,0,.15,1), opacity 0.25s;
     }
@@ -676,7 +663,7 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
        VISTA 2 — DETALLE DEL DÍA (TIMELINE)
     ═══════════════════════════════════════ */
     #prog-detail {
-      position: absolute; inset: 0;
+      position: fixed; inset: 0; z-index: 150;
       display: flex; flex-direction: column;
       transform: translateX(100%);
       transition: transform 0.3s cubic-bezier(.32,0,.15,1), opacity 0.25s;
@@ -2472,6 +2459,9 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="section-agenda" class="spa-section" data-ag-tab="programa"><body>
 <div id="app">
 
+  <!-- ── CONTENT ── -->
+  <div id="content-area">
+
   <!-- ── HEADER ── -->
   <div class="screen-header" id="main-header">
     <div class="header-inner">
@@ -2523,9 +2513,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <button id="ag-search-clear" onclick="window.agSearchClear()" style="display:none">✕</button>
     </div>
   </div>
-
-  <!-- ── CONTENT ── -->
-  <div id="content-area">
 
     <!-- PANEL: Programa (días + detalle) -->
     <div id="panel-ag-programa" class="ag-panel active">
@@ -3014,33 +3001,6 @@ window.openProgDetail = openProgDetail;
 window.closeProgDetail = closeProgDetail;
 window.openBitacoraPreset = openBitacoraPreset;
 
-(function() {
-  const section = document.getElementById('section-agenda');
-  let lastY = 0;
-  let ticking = false;
-  function onScroll(e) {
-    const y = e.target.scrollTop;
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function() {
-      if (y <= 5) {
-        section.classList.remove('header-hidden');
-      } else if (y > lastY + 4 && y > 40) {
-        section.classList.add('header-hidden');
-      } else if (y < lastY - 4) {
-        section.classList.remove('header-hidden');
-      }
-      lastY = y;
-      ticking = false;
-    });
-  }
-  document.addEventListener('DOMContentLoaded', function() {
-    ['prog-overview', 'prog-detail-scroll', 'panel-ag-vuelos', 'panel-ag-hoteles'].forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) el.addEventListener('scroll', onScroll, { passive: true });
-    });
-  });
-})();
 </script>
 </div>
   <div id="section-bitacora" class="spa-section"><body>
