@@ -512,6 +512,7 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     .ag-sr-type.vuelo { background: #e8f4fd; color: #2471a3; }
     .ag-sr-type.hotel { background: #eafaf1; color: #1e8449; }
     .ag-sr-empty { text-align: center; padding: 24px; color: var(--text-muted); font-size: 14px; }
+    .ag-sr-day { padding: 8px var(--pad-h) 4px; font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; background: var(--bg); border-bottom: 1px solid var(--border); }
 
     /* ── SCREEN HEADER ── */
     .screen-header {
@@ -2956,37 +2957,45 @@ function agSearch(q) {
   const results = [];
   PROGRAMA.forEach(function(dia, diaIdx) {
     (dia.eventos || []).forEach(function(ev) {
-      var text = (ev.desc + ' ' + (ev.nota || '') + ' ' + dia.ciudad + ' ' + (dia.resumen || '')).toLowerCase();
+      var text = (ev.desc + ' ' + (ev.nota || '')).toLowerCase();
       if (text.includes(lq)) {
-        results.push({ icon: ev.icon || '📅', desc: ev.desc, meta: 'Día ' + dia.dia + ' · ' + dia.fechaCorta + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
+        results.push({ icon: ev.icon || '📅', desc: ev.desc, hora: ev.hora || '', diaIdx: diaIdx, diaLabel: 'Día ' + dia.dia + ' · ' + dia.fechaCorta + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
       }
     });
   });
   VUELOS.forEach(function(v) {
     var text = (v.numero + ' ' + v.aerolinea + ' ' + v.ciudadOrigen + ' ' + v.ciudadDestino + ' ' + v.origen + ' ' + v.destino).toLowerCase();
     if (text.includes(lq)) {
-      results.push({ icon: '✈️', desc: v.numero + ' · ' + v.ciudadOrigen + ' → ' + v.ciudadDestino, meta: v.salidaLocal, type: 'vuelo', action: 'window.switchAgendaTab(\'vuelos\')' });
+      results.push({ icon: '✈️', desc: v.numero + ' · ' + v.ciudadOrigen + ' → ' + v.ciudadDestino, hora: v.salidaLocal, type: 'vuelo', action: 'window.switchAgendaTab(\'vuelos\')' });
     }
   });
   HOTELES.forEach(function(h) {
     var text = (h.nameEs + ' ' + h.checkinLabel + ' ' + h.checkoutLabel).toLowerCase();
     if (text.includes(lq)) {
-      results.push({ icon: '🏨', desc: h.nameEs, meta: 'Check-in ' + h.checkinLabel + ' · Check-out ' + h.checkoutLabel, type: 'hotel', action: 'window.switchAgendaTab(\'hoteles\')' });
+      results.push({ icon: '🏨', desc: h.nameEs, hora: 'Check-in ' + h.checkinLabel + ' · Check-out ' + h.checkoutLabel, type: 'hotel', action: 'window.switchAgendaTab(\'hoteles\')' });
     }
   });
   var typeLabel = { prog: 'Programa', vuelo: 'Vuelo', hotel: 'Hotel' };
-  var html = results.length === 0
-    ? '<div class="ag-sr-empty">Sin resultados para «' + q.replace(/</g,'&lt;') + '»</div>'
-    : results.map(function(r) {
-        return '<div class="ag-sr-item" onclick="' + r.action + '">'
-          + '<div class="ag-sr-icon">' + r.icon + '</div>'
-          + '<div class="ag-sr-body">'
-          + '<div class="ag-sr-desc">' + r.desc + '</div>'
-          + '<div class="ag-sr-meta">' + r.meta + '</div>'
-          + '</div>'
-          + '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>'
-          + '</div>';
-      }).join('');
+  var html = '';
+  if (results.length === 0) {
+    html = '<div class="ag-sr-empty">Sin resultados para «' + q.replace(/</g,'&lt;') + '»</div>';
+  } else {
+    var lastDia = null;
+    results.forEach(function(r) {
+      if (r.type === 'prog' && r.diaIdx !== lastDia) {
+        html += '<div class="ag-sr-day">' + r.diaLabel + '</div>';
+        lastDia = r.diaIdx;
+      }
+      html += '<div class="ag-sr-item" onclick="' + r.action + '">'
+        + '<div class="ag-sr-icon">' + r.icon + '</div>'
+        + '<div class="ag-sr-body">'
+        + '<div class="ag-sr-desc">' + r.desc + '</div>'
+        + '<div class="ag-sr-meta">' + r.hora + '</div>'
+        + '</div>'
+        + '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>'
+        + '</div>';
+    });
+  }
   wrap.innerHTML = html;
 }
 function agSearchClear() {
@@ -5041,37 +5050,45 @@ function agSearch(q) {
   const results = [];
   PROGRAMA.forEach(function(dia, diaIdx) {
     (dia.eventos || []).forEach(function(ev) {
-      var text = (ev.desc + ' ' + (ev.nota || '') + ' ' + dia.ciudad + ' ' + (dia.resumen || '')).toLowerCase();
+      var text = (ev.desc + ' ' + (ev.nota || '')).toLowerCase();
       if (text.includes(lq)) {
-        results.push({ icon: ev.icon || '📅', desc: ev.desc, meta: 'Día ' + dia.dia + ' · ' + dia.fechaCorta + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
+        results.push({ icon: ev.icon || '📅', desc: ev.desc, hora: ev.hora || '', diaIdx: diaIdx, diaLabel: 'Día ' + dia.dia + ' · ' + dia.fechaCorta + ' · ' + dia.ciudad, type: 'prog', action: 'window.openProgDetail(' + diaIdx + ');window.agSearchClear();' });
       }
     });
   });
   VUELOS.forEach(function(v) {
     var text = (v.numero + ' ' + v.aerolinea + ' ' + v.ciudadOrigen + ' ' + v.ciudadDestino + ' ' + v.origen + ' ' + v.destino).toLowerCase();
     if (text.includes(lq)) {
-      results.push({ icon: '✈️', desc: v.numero + ' · ' + v.ciudadOrigen + ' → ' + v.ciudadDestino, meta: v.salidaLocal, type: 'vuelo', action: 'window.switchAgendaTab(\'vuelos\')' });
+      results.push({ icon: '✈️', desc: v.numero + ' · ' + v.ciudadOrigen + ' → ' + v.ciudadDestino, hora: v.salidaLocal, type: 'vuelo', action: 'window.switchAgendaTab(\'vuelos\')' });
     }
   });
   HOTELES.forEach(function(h) {
     var text = (h.nameEs + ' ' + h.checkinLabel + ' ' + h.checkoutLabel).toLowerCase();
     if (text.includes(lq)) {
-      results.push({ icon: '🏨', desc: h.nameEs, meta: 'Check-in ' + h.checkinLabel + ' · Check-out ' + h.checkoutLabel, type: 'hotel', action: 'window.switchAgendaTab(\'hoteles\')' });
+      results.push({ icon: '🏨', desc: h.nameEs, hora: 'Check-in ' + h.checkinLabel + ' · Check-out ' + h.checkoutLabel, type: 'hotel', action: 'window.switchAgendaTab(\'hoteles\')' });
     }
   });
   const typeLabel = { prog: 'Programa', vuelo: 'Vuelo', hotel: 'Hotel' };
-  const html = results.length === 0
-    ? '<div class="ag-sr-empty">Sin resultados para «' + q.replace(/</g,'&lt;') + '»</div>'
-    : results.map(function(r) {
-        return '<div class="ag-sr-item" onclick="' + r.action + '">'
-          + '<div class="ag-sr-icon">' + r.icon + '</div>'
-          + '<div class="ag-sr-body">'
-          + '<div class="ag-sr-desc">' + r.desc + '</div>'
-          + '<div class="ag-sr-meta">' + r.meta + '</div>'
-          + '</div>'
-          + '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>'
-          + '</div>';
-      }).join('');
+  let html = '';
+  if (results.length === 0) {
+    html = '<div class="ag-sr-empty">Sin resultados para «' + q.replace(/</g,'&lt;') + '»</div>';
+  } else {
+    let lastDia = null;
+    results.forEach(function(r) {
+      if (r.type === 'prog' && r.diaIdx !== lastDia) {
+        html += '<div class="ag-sr-day">' + r.diaLabel + '</div>';
+        lastDia = r.diaIdx;
+      }
+      html += '<div class="ag-sr-item" onclick="' + r.action + '">'
+        + '<div class="ag-sr-icon">' + r.icon + '</div>'
+        + '<div class="ag-sr-body">'
+        + '<div class="ag-sr-desc">' + r.desc + '</div>'
+        + '<div class="ag-sr-meta">' + r.hora + '</div>'
+        + '</div>'
+        + '<span class="ag-sr-type ' + r.type + '">' + typeLabel[r.type] + '</span>'
+        + '</div>';
+    });
+  }
   if (overview) overview.innerHTML = html;
 }
 function agSearchClear() {
