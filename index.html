@@ -517,6 +517,14 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     .screen-header {
       background: var(--primary); padding: 16px var(--pad-h) 14px; flex-shrink: 0;
     }
+    #section-agenda .screen-header {
+      overflow: hidden;
+      transition: max-height 0.28s ease, opacity 0.2s ease, padding-top 0.28s ease, padding-bottom 0.28s ease;
+      max-height: 200px;
+    }
+    #section-agenda.header-hidden .screen-header {
+      max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
+    }
     .header-inner {
       display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
     }
@@ -957,7 +965,10 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     #section-bitacora #content-area {
       flex: 1; overflow-y: auto; overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding: 14px var(--pad-h) calc(var(--nav-height) + 80px);
+      padding: 0 0 calc(var(--nav-height) + 80px);
+    }
+    #section-bitacora #entries-list {
+      padding: 14px var(--pad-h) 0;
     }
     #section-bitacora #content-area::-webkit-scrollbar { width: 3px; }
     #section-bitacora #content-area::-webkit-scrollbar-thumb { background: rgba(192,57,43,0.2); border-radius: 2px; }
@@ -1455,7 +1466,13 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     #section-utilidades #content-area {
       flex: 1; overflow-y: auto; overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding: 16px var(--pad-h) calc(var(--nav-height) + 32px);
+      padding: 0 0 calc(var(--nav-height) + 32px);
+    }
+    #section-utilidades .tab-panel.active {
+      padding: 16px var(--pad-h) 0;
+    }
+    #section-utilidades .inner-tabs {
+      position: sticky; top: 0; z-index: 10;
     }
     #section-utilidades #content-area::-webkit-scrollbar { width: 3px; }
     #section-utilidades #content-area::-webkit-scrollbar-thumb {
@@ -2993,61 +3010,76 @@ window.switchAgendaTab = switchAgendaTab;
 window.openProgDetail = openProgDetail;
 window.closeProgDetail = closeProgDetail;
 window.openBitacoraPreset = openBitacoraPreset;
+
+(function() {
+  const section = document.getElementById('section-agenda');
+  let lastY = 0;
+  function onScroll(e) {
+    const y = e.target.scrollTop;
+    if (y > lastY && y > 40) section.classList.add('header-hidden');
+    else if (y < lastY) section.classList.remove('header-hidden');
+    lastY = y;
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    ['prog-overview', 'prog-detail-scroll', 'panel-ag-vuelos', 'panel-ag-hoteles'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('scroll', onScroll, { passive: true });
+    });
+  });
+})();
 </script>
 </div>
   <div id="section-bitacora" class="spa-section"><body>
 <div id="app">
 
-  <!-- HEADER -->
-  <div class="screen-header">
-    <div class="header-inner">
-      <div>
-        <div class="header-badge">China 2026</div>
-        <h1>Bitácora</h1>
-        <p>Tu diario del viaje</p>
-      </div>
-      <div class="header-clocks">
-        <div class="header-clock-row">
-          <span class="header-clock-flag">🇨🇳</span>
-          <div>
-            <div class="header-clock-time" id="hclock-china">--:--</div>
-            <div class="header-clock-label">China</div>
-          </div>
-        </div>
-        <div class="header-clock-row">
-          <span class="header-clock-flag">🇪🇸</span>
-          <div>
-            <div class="header-clock-time" id="hclock-madrid">--:--</div>
-            <div class="header-clock-label">Madrid</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STORAGE BAR -->
-  <div class="storage-bar" id="storage-bar">
-    <div class="storage-bar-top">
-      <span class="storage-label">Almacenamiento: <strong id="storage-used">0 KB</strong> de ~5 MB</span>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span class="storage-pct" id="storage-pct">0%</span>
-        <button class="btn-pdf" onclick="exportPDF()">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          PDF
-        </button>
-      </div>
-    </div>
-    <div class="storage-track">
-      <div class="storage-fill" id="storage-fill" style="width:0%"></div>
-    </div>
-  </div>
-
   <!-- CONTENT -->
   <div id="content-area">
+    <!-- HEADER -->
+    <div class="screen-header">
+      <div class="header-inner">
+        <div>
+          <div class="header-badge">China 2026</div>
+          <h1>Bitácora</h1>
+          <p>Tu diario del viaje</p>
+        </div>
+        <div class="header-clocks">
+          <div class="header-clock-row">
+            <span class="header-clock-flag">🇨🇳</span>
+            <div>
+              <div class="header-clock-time" id="hclock-china">--:--</div>
+              <div class="header-clock-label">China</div>
+            </div>
+          </div>
+          <div class="header-clock-row">
+            <span class="header-clock-flag">🇪🇸</span>
+            <div>
+              <div class="header-clock-time" id="hclock-madrid">--:--</div>
+              <div class="header-clock-label">Madrid</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- STORAGE BAR -->
+    <div class="storage-bar" id="storage-bar">
+      <div class="storage-bar-top">
+        <span class="storage-label">Almacenamiento: <strong id="storage-used">0 KB</strong> de ~5 MB</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="storage-pct" id="storage-pct">0%</span>
+          <button class="btn-pdf" onclick="exportPDF()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PDF
+          </button>
+        </div>
+      </div>
+      <div class="storage-track">
+        <div class="storage-fill" id="storage-fill" style="width:0%"></div>
+      </div>
+    </div>
     <div id="print-header">
       <h1>📔 Bitácora — Viaje China 2026</h1>
       <p>Viaje profesional · 17–25 mayo 2026 · Shanghái · Chengdú · Beijing</p>
@@ -3698,47 +3730,47 @@ document.addEventListener('DOMContentLoaded', () => {
   <div id="section-utilidades" class="spa-section"><body>
 <div id="app">
 
-  <!-- HEADER -->
-  <div class="screen-header">
-    <div class="header-inner">
-      <div>
-        <div class="header-badge">China 2026</div>
-        <h1>Herramientas</h1>
-        <p>Divisa y frases útiles</p>
-      </div>
-      <div class="header-clocks">
-        <div class="header-clock-row">
-          <span class="header-clock-flag">🇨🇳</span>
-          <div>
-            <div class="header-clock-time" id="hclock-china">--:--</div>
-            <div class="header-clock-label">China</div>
-          </div>
+  <!-- CONTENT AREA -->
+  <div id="content-area">
+
+    <!-- HEADER -->
+    <div class="screen-header">
+      <div class="header-inner">
+        <div>
+          <div class="header-badge">China 2026</div>
+          <h1>Herramientas</h1>
+          <p>Divisa y frases útiles</p>
         </div>
-        <div class="header-clock-row">
-          <span class="header-clock-flag">🇪🇸</span>
-          <div>
-            <div class="header-clock-time" id="hclock-madrid">--:--</div>
-            <div class="header-clock-label">Madrid</div>
+        <div class="header-clocks">
+          <div class="header-clock-row">
+            <span class="header-clock-flag">🇨🇳</span>
+            <div>
+              <div class="header-clock-time" id="hclock-china">--:--</div>
+              <div class="header-clock-label">China</div>
+            </div>
+          </div>
+          <div class="header-clock-row">
+            <span class="header-clock-flag">🇪🇸</span>
+            <div>
+              <div class="header-clock-time" id="hclock-madrid">--:--</div>
+              <div class="header-clock-label">Madrid</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- PESTAÑAS INTERNAS -->
-  <div class="inner-tabs">
-    <button class="inner-tab active" id="tab-divisa" onclick="switchTab('divisa')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Divisa
-    </button>
-    <button class="inner-tab" id="tab-frases" onclick="switchTab('frases')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Frases
-    </button>
-  </div>
-
-  <!-- CONTENT AREA -->
-  <div id="content-area">
+    <!-- PESTAÑAS INTERNAS -->
+    <div class="inner-tabs">
+      <button class="inner-tab active" id="tab-divisa" onclick="switchTab('divisa')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Divisa
+      </button>
+      <button class="inner-tab" id="tab-frases" onclick="switchTab('frases')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Frases
+      </button>
+    </div>
 
     <!-- ═══════════ PANEL DIVISA ═══════════ -->
     <div class="tab-panel active" id="panel-divisa">
