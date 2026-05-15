@@ -1268,9 +1268,25 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     .detail-texto { font-size: 15px; color: var(--text); line-height: 1.75; white-space: pre-wrap; }
     .detail-photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 20px; }
     .detail-photos img {
-      width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; display: block;
+      width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; display: block; cursor: pointer;
     }
     .detail-meta { font-size: 11px; color: var(--text-secondary); margin-top: 16px; }
+
+    /* ── LIGHTBOX ── */
+    #photo-lightbox {
+      position: fixed; inset: 0; z-index: 600;
+      background: rgba(0,0,0,0.93);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    #photo-lightbox.open { opacity: 1; pointer-events: all; }
+    #photo-lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .lightbox-close {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(255,255,255,0.15); border: none; border-radius: 50%;
+      width: 40px; height: 40px; color: white; font-size: 20px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
 
     /* ── BOTTOM NAV ── */
     #bottom-nav {
@@ -3010,6 +3026,17 @@ window.openProgDetail = openProgDetail;
 window.closeProgDetail = closeProgDetail;
 window.openBitacoraPreset = openBitacoraPreset;
 
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('photo-lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('photo-lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
+}
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+
 </script>
 </div>
   <div id="section-bitacora" class="spa-section"><body>
@@ -3345,7 +3372,7 @@ function renderList() {
     const preview = e.texto.trim().slice(0, 120);
     const thumbsHtml = e.fotos && e.fotos.length
       ? `<div class="entry-thumb">
-          ${e.fotos.slice(0,3).map(f => `<img src="${f}" loading="lazy">`).join('')}
+          ${e.fotos.slice(0,3).map(f => `<img src="${f}" loading="lazy" onclick="event.stopPropagation();openLightbox('${f}')" style="cursor:pointer">`).join('')}
           ${e.fotos.length > 3 ? `<div class="entry-thumb-more">+${e.fotos.length - 3}</div>` : ''}
          </div>` : '';
     html += `<div class="entry-card" onclick="openDetail('${e.id}')">
@@ -3645,7 +3672,7 @@ function openDetail(id) {
   document.getElementById('detail-title').textContent = e.actividad;
   const scroll = document.getElementById('detail-scroll');
   const fotosHtml = e.fotos && e.fotos.length
-    ? `<div class="detail-photos">${e.fotos.map(f => `<img src="${f}" loading="lazy">`).join('')}</div>` : '';
+    ? `<div class="detail-photos">${e.fotos.map(f => `<img src="${f}" loading="lazy" onclick="openLightbox('${f}')">`).join('')}</div>` : '';
   const starsHtml = e.estrellas
     ? `<div class="detail-stars">${'★'.repeat(e.estrellas)}${'☆'.repeat(5 - e.estrellas)}</div>` : '';
   const masHtml = e.masGustado
@@ -4308,6 +4335,12 @@ renderFrases();
 </script>
 </div>
   
+  <!-- LIGHTBOX FOTOS -->
+  <div id="photo-lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="event.stopPropagation();closeLightbox()">✕</button>
+    <img id="lightbox-img" src="">
+  </div>
+
   <nav id="bottom-nav">
     <button class="nav-btn" data-section="grupo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-label">Grupo</span></button>
     <button class="nav-btn" data-section="agenda"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg><span class="nav-label">Agenda</span></button>
@@ -5259,7 +5292,7 @@ function renderList() {
     const preview = e.texto.trim().slice(0, 120);
     const thumbsHtml = e.fotos && e.fotos.length
       ? `<div class="entry-thumb">
-          ${e.fotos.slice(0,3).map(f => `<img src="${f}" loading="lazy">`).join('')}
+          ${e.fotos.slice(0,3).map(f => `<img src="${f}" loading="lazy" onclick="event.stopPropagation();openLightbox('${f}')" style="cursor:pointer">`).join('')}
           ${e.fotos.length > 3 ? `<div class="entry-thumb-more">+${e.fotos.length - 3}</div>` : ''}
          </div>` : '';
     html += `<div class="entry-card" onclick="openDetail('${e.id}')">
@@ -5559,7 +5592,7 @@ function openDetail(id) {
   document.getElementById('detail-title').textContent = e.actividad;
   const scroll = document.getElementById('detail-scroll');
   const fotosHtml = e.fotos && e.fotos.length
-    ? `<div class="detail-photos">${e.fotos.map(f => `<img src="${f}" loading="lazy">`).join('')}</div>` : '';
+    ? `<div class="detail-photos">${e.fotos.map(f => `<img src="${f}" loading="lazy" onclick="openLightbox('${f}')">`).join('')}</div>` : '';
   const starsHtml = e.estrellas
     ? `<div class="detail-stars">${'★'.repeat(e.estrellas)}${'☆'.repeat(5 - e.estrellas)}</div>` : '';
   const masHtml = e.masGustado
