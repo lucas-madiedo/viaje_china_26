@@ -1819,6 +1819,46 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
       font-size: 28px; font-weight: 700; color: white;
       text-align: center; line-height: 1.4; padding: 8px 0;
     }
+    .fc-front { position: relative; }
+    .fc-back { position: relative; }
+    .fc-expand-btn {
+      position: absolute; bottom: 8px; right: 8px;
+      background: none; border: none; padding: 4px; cursor: pointer;
+      color: rgba(255,255,255,0.6); line-height: 1;
+    }
+    .fc-expand-btn:active { color: white; }
+
+    /* ── FLIPCARD FULLSCREEN ── */
+    #fc-fullscreen {
+      position: fixed; inset: 0; z-index: 600;
+      background: var(--primary-pastel);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    #fc-fullscreen.open { opacity: 1; pointer-events: all; }
+    #fc-fs-wrap {
+      width: 85vw; max-width: 600px;
+      cursor: pointer; user-select: none; -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #fc-fs-inner {
+      display: grid; transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+    }
+    #fc-fs-wrap.flipped #fc-fs-inner { transform: rotateY(180deg); }
+    .fc-fs-face {
+      grid-area: 1 / 1;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 24px; padding: 40px 32px;
+      min-height: 38vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    }
+    .fc-fs-front { background: white; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+    .fc-fs-back { background: var(--primary); transform: rotateY(180deg); }
+    .fc-fs-es { font-size: 22px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.5; }
+    .fc-fs-hint { font-size: 12px; color: var(--text-secondary); font-style: italic; }
+    .fc-fs-zh { font-size: 72px; font-weight: 700; color: white; text-align: center; line-height: 1.3; }
 
     /* ═══════════════════════════════════════
        PESTAÑA VUELOS
@@ -4285,6 +4325,9 @@ function buildCardHtml(f) {
       '</div>' +
       '<div class="fc-back">' +
         '<div class="fc-zh-text" id="fcard-' + f.id + '-zh"></div>' +
+        '<button class="fc-expand-btn" onclick="event.stopPropagation();openFcFullscreen(\'' + f.id + '\')" title="Pantalla completa">' +
+          '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>' +
+        '</button>' +
       '</div>' +
     '</div>' +
   '</div>';
@@ -4322,6 +4365,40 @@ function flipFrase(id, e) {
 }
 window.flipFrase = flipFrase;
 
+function openFcFullscreen(id) {
+  var data = FRASES.find(function(f){ return f.id === id; });
+  if (!data) return;
+  var esText = data.esParts.map(function(p) {
+    if (typeof p === 'string') return p;
+    var inp = document.getElementById('slot-' + id + '-' + p.key);
+    return inp ? (inp.value || p.def) : p.def;
+  }).join('');
+  var zh = data.zh;
+  data.esParts.forEach(function(p) {
+    if (typeof p === 'object') {
+      var inp = document.getElementById('slot-' + id + '-' + p.key);
+      zh = zh.replace('{' + p.key + '}', inp ? (inp.value || p.def) : p.def);
+    }
+  });
+  document.getElementById('fc-fs-es').textContent = esText;
+  document.getElementById('fc-fs-zh').textContent = zh;
+  document.getElementById('fc-fs-wrap').classList.add('flipped');
+  document.getElementById('fc-fullscreen').classList.add('open');
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(function(){});
+  }
+}
+function closeFcFullscreen() {
+  document.getElementById('fc-fullscreen').classList.remove('open');
+  if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+}
+function flipFsCard() {
+  document.getElementById('fc-fs-wrap').classList.toggle('flipped');
+}
+window.openFcFullscreen = openFcFullscreen;
+window.closeFcFullscreen = closeFcFullscreen;
+window.flipFsCard = flipFsCard;
+
 // ══════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════
@@ -4335,6 +4412,22 @@ renderFrases();
 </script>
 </div>
   
+  <!-- FLIPCARD FULLSCREEN -->
+  <div id="fc-fullscreen" onclick="closeFcFullscreen()">
+    <button class="lightbox-close" onclick="closeFcFullscreen()">✕</button>
+    <div id="fc-fs-wrap" onclick="event.stopPropagation();flipFsCard()">
+      <div id="fc-fs-inner">
+        <div class="fc-fs-face fc-fs-front">
+          <div class="fc-fs-es" id="fc-fs-es"></div>
+          <div class="fc-fs-hint">Toca para ver en chino →</div>
+        </div>
+        <div class="fc-fs-face fc-fs-back">
+          <div class="fc-fs-zh" id="fc-fs-zh"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- LIGHTBOX FOTOS -->
   <div id="photo-lightbox" onclick="closeLightbox()">
     <button class="lightbox-close" onclick="event.stopPropagation();closeLightbox()">✕</button>
@@ -6131,6 +6224,9 @@ function buildCardHtmlU(f) {
       '</div>' +
       '<div class="fc-back">' +
         '<div class="fc-zh-text" id="fcard-' + f.id + '-zh"></div>' +
+        '<button class="fc-expand-btn" onclick="event.stopPropagation();openFcFullscreen(\'' + f.id + '\')" title="Pantalla completa">' +
+          '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>' +
+        '</button>' +
       '</div>' +
     '</div>' +
   '</div>';
@@ -6167,6 +6263,33 @@ function flipFraseU(id, e) {
   card.classList.toggle('flipped');
 }
 window.flipFrase = flipFraseU;
+
+function openFcFullscreenU(id) {
+  var data = FRASES.find(function(f){ return f.id === id; });
+  if (!data) return;
+  var esText = data.esParts.map(function(p) {
+    if (typeof p === 'string') return p;
+    var inp = document.getElementById('slot-' + id + '-' + p.key);
+    return inp ? (inp.value || p.def) : p.def;
+  }).join('');
+  var zh = data.zh;
+  data.esParts.forEach(function(p) {
+    if (typeof p === 'object') {
+      var inp = document.getElementById('slot-' + id + '-' + p.key);
+      zh = zh.replace('{' + p.key + '}', inp ? (inp.value || p.def) : p.def);
+    }
+  });
+  document.getElementById('fc-fs-es').textContent = esText;
+  document.getElementById('fc-fs-zh').textContent = zh;
+  document.getElementById('fc-fs-wrap').classList.add('flipped');
+  document.getElementById('fc-fullscreen').classList.add('open');
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('landscape').catch(function(){});
+  }
+}
+window.openFcFullscreen = openFcFullscreenU;
+window.closeFcFullscreen = closeFcFullscreen;
+window.flipFsCard = flipFsCard;
 
 // ══════════════════════════════════════════════════════
 //  INIT
