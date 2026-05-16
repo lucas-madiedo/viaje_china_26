@@ -13,6 +13,13 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
     }
+    function hardReload() {
+      if ('caches' in window) {
+        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => location.reload());
+      } else {
+        location.reload();
+      }
+    }
   </script>
   <style>
 /* Base SPA */
@@ -2202,7 +2209,7 @@ body{font-family:var(--font);background:var(--primary-pastel);color:var(--text);
     <div class="screen-header">
       <div class="header-inner">
         <div>
-          <div class="header-badge">China 2026</div>
+          <div class="header-badge" onclick="hardReload()">China 2026</div>
           <h1>Participantes</h1>
           <p>Listado de Participantes &nbsp;·&nbsp; 17–25 mayo</p>
         </div>
@@ -2523,7 +2530,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="screen-header" id="main-header">
     <div class="header-inner">
       <div>
-        <div class="header-badge">China 2026</div>
+        <div class="header-badge" onclick="hardReload()">China 2026</div>
         <h1>Programa</h1>
         <p>9 días · Shanghái · Chengdú · Beijing</p>
       </div>
@@ -3088,7 +3095,7 @@ window.closeLightbox = closeLightbox;
     <div class="screen-header">
       <div class="header-inner">
         <div>
-          <div class="header-badge">China 2026</div>
+          <div class="header-badge" onclick="hardReload()">China 2026</div>
           <h1>Bitácora</h1>
           <p>Tu diario del viaje</p>
         </div>
@@ -3787,7 +3794,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="screen-header">
       <div class="header-inner">
         <div>
-          <div class="header-badge">China 2026</div>
+          <div class="header-badge" onclick="hardReload()">China 2026</div>
           <h1>Herramientas</h1>
           <p>Divisa y frases útiles</p>
         </div>
